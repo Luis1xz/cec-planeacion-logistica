@@ -1,0 +1,18 @@
+{
+  "name": "cec-planeacion-logistica",
+  "version": "2.0.0",
+  "description": "Tablero de Planeación Logística y Gestión de Cursos - CEC Universidad del Norte",
+  "scripts": {
+    "start": "npx serve public"
+  },
+  "keywords": [
+    "cec",
+    "uninorte",
+    "logistica",
+    "dashboard",
+    "tv-mode",
+    "kiosk"
+  ],
+  "author": "Luis Alfonso Herrera",
+  "license": "MIT"
+}

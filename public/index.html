@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablero de Planeación Logística · CEC | Uninorte</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"
+    rel="stylesheet">
+  <script>
+    document.write('<link rel="stylesheet" href="style.css?t=' + Date.now() + '">');
+  </script>
+  <noscript>
+    <link rel="stylesheet" href="style.css">
+  </noscript>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <header class="top">
+      <div class="brand">
+        <div class="brand-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+            <line x1="7" y1="9" x2="17" y2="9"></line>
+            <line x1="7" y1="13" x2="13" y2="13"></line>
+            <circle cx="16" cy="13" r="1" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <div class="eyebrow">
+            <span class="live-dot-pulse"></span> CEC · UNIVERSIDAD DEL NORTE
+          </div>
+          <h1>Tablero de Planeación Logística</h1>
+        </div>
+      </div>
+      <div class="asof">
+        <div class="asof-actions">
+          <button type="button" id="btn-bandeja-correos" class="email-inbox-pill"
+            title="Solicitudes de Apertura de Curso recibidas por Correo">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>Correos Apertura</span>
+            <span id="badge-correos" class="email-inbox-badge" style="display:none;">0</span>
+          </button>
+          <button type="button" id="btn-open-tv-mode" class="tv-mode-pill"
+            title="Abrir Modo TV / Panel Kiosko para Pantalla Grande">
+            <span class="tv-icon-pulse">📺</span>
+            <span>Modo TV</span>
+            <span id="badge-tv-pendientes" class="tv-badge-counter" style="display:none;">0</span>
+          </button>
+          <div id="firebase-status-btn" class="firebase-status-pill">
+            <span id="firebase-dot" class="status-dot connected"></span>
+            <span id="firebase-status-label">Firebase: En tiempo real</span>
+          </div>
+        </div>
+        <div class="asof-meta-line">
+          <span>Actualizado: <strong id="asof-date">—</strong></span>
+          <span class="asof-tag">En vivo</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="kpi-row" id="kpi-row"></div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div id="view-current">
+      <div class="toolbar"
+        style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;gap:10px;align-items:center;flex-grow:1;flex-wrap:wrap;">
+          <input type="search" id="search-box" placeholder="Buscar programa o coordinadora…">
+          <div id="coord-chips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+          <div class="quick-status-filters" id="quick-status-filters" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <button type="button" class="quick-filter-chip active" data-filter="all">Todos</button>
+            <button type="button" class="quick-filter-chip chip-red" data-filter="red"><span class="qdot red"></span> Críticos (<span id="qcount-red">0</span>)</button>
+            <button type="button" class="quick-filter-chip chip-amber" data-filter="amber"><span class="qdot amber"></span> Seguimiento (<span id="qcount-amber">0</span>)</button>
+            <button type="button" class="quick-filter-chip chip-green" data-filter="green"><span class="qdot green"></span> Al día (<span id="qcount-green">0</span>)</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button type="button" id="btn-apertura-correo-tb" class="btn btn-secondary"
+            style="display:inline-flex;align-items:center;gap:6px;position:relative;"
+            title="Solicitudes de Apertura de Curso recibidas por correo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>Aperturas Correo</span>
+            <span id="badge-correos-tb" class="email-badge-counter" style="display:none;">0</span>
+          </button>
+          <button type="button" id="btn-importar-excel" class="btn btn-accent"
+            style="display:inline-flex;align-items:center;gap:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            Importar Excel
+          </button>
+          <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none;">
+          <button type="button" id="btn-nuevo-programa" class="btn btn-primary"
+            style="display:inline-flex;align-items:center;gap:6px;">
+            <span>+</span> Nuevo Programa
+          </button>
+          <button type="button" id="btn-sync-all-drive" class="btn btn-secondary"
+            title="Montar y sincronizar todas las carpetas y planillas a Google Drive"
+            style="display:inline-flex;align-items:center;gap:6px;">
+            <span>📁</span> Sincronizar Drive
+          </button>
+          <button type="button" id="btn-limpiar-db" class="btn btn-secondary"
+            title="Vaciar todos los datos de Firebase para comenzar de cero">
+            🗑️ Vaciar BD
+          </button>
+        </div>
+      </div>
+      <div class="week-bar" style="margin-top:10px;">
+        <span class="week-bar-label">Mes:</span>
+        <div id="month-chips" class="week-chips"></div>
+      </div>
+      <div class="week-bar">
+        <span class="week-bar-label">Semana:</span>
+        <div id="week-chips" class="week-chips"></div>
+      </div>
+      <div class="week-legend" id="week-legend"></div>
+
+      <!-- Barra de progreso de subida y sincronización con Google Drive -->
+      <div id="drive-sync-progress-card" class="sync-progress-card" style="display:none;">
+        <div class="sync-progress-header">
+          <div class="sync-progress-title-wrap">
+            <div id="sync-spinner-icon" class="import-spinner"
+              style="width:16px;height:16px;border-width:2px;display:inline-block;"></div>
+            <span id="sync-check-icon" style="display:none;font-size:16px;">✅</span>
+            <span class="sync-progress-title" id="sync-progress-title">Sincronización con Google Drive</span>
+          </div>
+          <div class="sync-progress-meta">
+            <span class="sync-progress-count" id="sync-progress-count">0 de 0 cursos montados (0%)</span>
+            <button type="button" id="btn-close-sync-progress" class="sync-close-btn" title="Ocultar barra">✕</button>
+          </div>
+        </div>
+        <div class="sync-progress-track">
+          <div id="sync-progress-fill" class="sync-progress-fill" style="width:0%;"></div>
+        </div>
+        <div class="sync-progress-footer">
+          <span id="sync-progress-detail" class="sync-progress-detail">Iniciando verificación de cursos...</span>
+          <span id="sync-progress-badge" class="pill blue" style="font-size:10px;padding:2px 8px;">En vivo</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Programación <span class="tag" id="table-count"></span> <span class="tag" id="drive-sync-quick-badge"
+            style="cursor:pointer;margin-left:6px;" title="Ver barra de progreso de carga a Google Drive">📁 Drive:
+            0/0</span></h2>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Programa</th>
+                <th>Coordinadora</th>
+                <th>Días / Horario</th>
+                <th>Fechas</th>
+                <th>Estado</th>
+                <th>Mes</th>
+                <th>Semáforo</th>
+                <th style="text-align:right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="main-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <h2>Recordatorios pendientes a coordinadoras <span class="tag" id="rec-count"></span></h2>
+          <div class="alert-list" id="reminders-list"></div>
+        </div>
+        <div class="panel">
+          <h2>Encuestas de satisfacción <span class="tag" id="survey-count"></span></h2>
+          <div class="alert-list" id="survey-list"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Listas pendientes por tabular <span class="tag" id="tab-count"></span></h2>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Periodo</th>
+                <th>Programa</th>
+                <th>Coordinadora</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tab-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-archive" style="display:none;">
+      <div class="toolbar">
+        <select class="month-select" id="archive-select"></select>
+      </div>
+      <div class="panel">
+        <h2>Histórico <span class="tag" id="archive-count"></span></h2>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Programa</th>
+                <th>Coordinadora</th>
+                <th>Modalidad</th>
+                <th>Fechas</th>
+                <th>Estado</th>
+                <th>Facturación</th>
+              </tr>
+            </thead>
+            <tbody id="archive-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Semáforo de control: <strong style="color:var(--rose-600);">Rojo</strong> (requiere acción inmediata) ·
+      <strong style="color:var(--amber-600);">Amarillo</strong> (seguimiento o fecha próxima) ·
+      <strong style="color:var(--emerald-600);">Verde</strong> (al día y confirmado).
+      <br>
+      Plataforma logística CEC · Universidad del Norte — Sincronización en la nube con <strong>Firebase Realtime
+        Database</strong>.
+    </footer>
+
+  </div>
+
+  <!-- Modal de Creación / Edición de Programa -->
+  <!-- =========================================================================
+       PANEL KIOSKO / MODO TELEVISOR PARA PANTALLA GRANDE (CEC UNINORTE)
+       ========================================================================= -->
+  <div id="view-tv" class="tv-dashboard-view" style="display:none;">
+    <!-- TV Header -->
+    <header class="tv-header">
+      <div class="tv-brand">
+        <div class="tv-brand-badge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+            <line x1="7" y1="9" x2="17" y2="9"></line>
+            <line x1="7" y1="13" x2="13" y2="13"></line>
+            <circle cx="16" cy="13" r="1" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div class="tv-brand-meta">
+          <div class="tv-brand-eyebrow">
+            <span class="tv-dot-pulse"></span> CEC · UNIVERSIDAD DEL NORTE
+          </div>
+          <h1 class="tv-title">Panel de Control & Monitoreo Logístico</h1>
+        </div>
+      </div>
+
+      <div class="tv-clock-center">
+        <div class="tv-clock-time" id="tv-clock-time">--:--:--</div>
+        <div class="tv-clock-date" id="tv-clock-date">Cargando fecha...</div>
+      </div>
+
+      <div class="tv-controls">
+        <div class="tv-status-pill">
+          <span class="tv-status-dot"></span>
+          <span id="tv-sync-status">Firebase en vivo</span>
+        </div>
+        <button type="button" id="tv-btn-autoscroll" class="tv-ctrl-btn active" title="Alternar desplazamiento automático">
+          <span id="tv-autoscroll-icon">⏸</span>
+          <span id="tv-autoscroll-label">Auto-scroll</span>
+        </button>
+        <button type="button" id="tv-btn-theme" class="tv-ctrl-btn" title="Alternar tema de pantalla (Oscuro / Claro)">
+          <span id="tv-theme-icon">🌙</span>
+          <span id="tv-theme-label">Noche</span>
+        </button>
+        <button type="button" id="tv-btn-fullscreen" class="tv-ctrl-btn" title="Pantalla completa (F11)">
+          <span>⛶</span>
+          <span>Pantalla Completa</span>
+        </button>
+        <button type="button" id="tv-btn-exit" class="tv-ctrl-btn tv-btn-danger" title="Salir a la vista normal (Esc)">
+          <span>✕</span>
+          <span>Salir</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- TV KPI Summary Ribbon -->
+    <div class="tv-kpi-ribbon" id="tv-kpi-ribbon">
+      <div class="tv-kpi-card tv-kpi-red">
+        <div class="tv-kpi-val" id="tv-kpi-rojos">0</div>
+        <div class="tv-kpi-lbl">Alertas Críticas (Rojo)</div>
+      </div>
+      <div class="tv-kpi-card tv-kpi-amber">
+        <div class="tv-kpi-val" id="tv-kpi-tab-vencidas">0</div>
+        <div class="tv-kpi-lbl">Tabulaciones Vencidas</div>
+      </div>
+      <div class="tv-kpi-card tv-kpi-amber">
+        <div class="tv-kpi-val" id="tv-kpi-salones-pend">0</div>
+        <div class="tv-kpi-lbl">Salones por Resolver</div>
+      </div>
+      <div class="tv-kpi-card tv-kpi-blue">
+        <div class="tv-kpi-val" id="tv-kpi-aperturas">0</div>
+        <div class="tv-kpi-lbl">Aperturas Pendientes</div>
+      </div>
+      <div class="tv-kpi-card tv-kpi-emerald">
+        <div class="tv-kpi-val" id="tv-kpi-en-curso">0</div>
+        <div class="tv-kpi-lbl">Cursos en Marcha</div>
+      </div>
+      <div class="tv-kpi-card tv-kpi-indigo">
+        <div class="tv-kpi-val" id="tv-kpi-total-activos">0</div>
+        <div class="tv-kpi-lbl">Programas Registrados</div>
+      </div>
+    </div>
+
+    <!-- TV 3 Columns Stream -->
+    <div class="tv-content-body" id="tv-content-body">
+      <!-- Columna 1: Urgencias y Alertas Rojas -->
+      <div class="tv-col tv-col-urgent">
+        <div class="tv-col-header tv-header-urgent">
+          <div class="tv-col-title-wrap">
+            <span class="tv-col-icon">🚨</span>
+            <h2>Urgente & Alertas Rojas</h2>
+          </div>
+          <span class="tv-col-count badge-red" id="tv-badge-urgent-count">0</span>
+        </div>
+        <div class="tv-col-scroll" id="tv-list-urgent"></div>
+      </div>
+
+      <!-- Columna 2: Clases en curso y Próximos inicios -->
+      <div class="tv-col tv-col-schedule">
+        <div class="tv-col-header tv-header-schedule">
+          <div class="tv-col-title-wrap">
+            <span class="tv-col-icon">🗓️</span>
+            <h2>Clases Activas & Próximos Inicios</h2>
+          </div>
+          <span class="tv-col-count badge-blue" id="tv-badge-schedule-count">0</span>
+        </div>
+        <div class="tv-col-scroll" id="tv-list-schedule"></div>
+      </div>
+
+      <!-- Columna 3: Tabulaciones & Recordatorios -->
+      <div class="tv-col tv-col-reminders">
+        <div class="tv-col-header tv-header-reminders">
+          <div class="tv-col-title-wrap">
+            <span class="tv-col-icon">📋</span>
+            <h2>Tabulaciones & Recordatorios</h2>
+          </div>
+          <span class="tv-col-count badge-amber" id="tv-badge-reminders-count">0</span>
+        </div>
+        <div class="tv-col-scroll" id="tv-list-reminders"></div>
+      </div>
+    </div>
+
+    <!-- TV Bottom Status Bar -->
+    <footer class="tv-footer-bar">
+      <div class="tv-footer-status">
+        <span class="tv-status-pulse"></span>
+        <span id="tv-footer-text">Modo Televisor Activo · Transmisión en tiempo real</span>
+      </div>
+      <div class="tv-footer-meta">
+        <span>CEC · Centro de Educación Continuada · Uninorte</span>
+        <span class="tv-sep">|</span>
+        <span id="tv-footer-time-update">Actualizado hace un momento</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Contenedor flotante de notificaciones Toast -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <div id="program-modal" class="modal-overlay" hidden>
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <h3 id="prog-modal-title">✏️ Editar Programa</h3>
+        <button type="button" id="prog-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <form id="prog-form">
+        <input type="hidden" id="f-id">
+
+        <div class="form-section-title">1. Información del Programa</div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;">
+            <label for="f-programa">Nombre del programa *</label>
+            <input type="text" id="f-programa" required placeholder="Ej: Diplomado en...">
+          </div>
+          <div class="form-group">
+            <label for="f-no">No. / Código</label>
+            <input type="text" id="f-no" placeholder="Ej: 1">
+          </div>
+          <div class="form-group">
+            <label for="f-nrc">NRC</label>
+            <input type="text" id="f-nrc" placeholder="Ej: 1482">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-coordinadora">Coordinadora</label>
+            <select id="f-coordinadora">
+              <option value="Patricia">Patricia</option>
+              <option value="Andrea">Andrea</option>
+              <option value="Liliam">Liliam</option>
+              <option value="Karen">Karen</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-modalidad">Modalidad</label>
+            <select id="f-modalidad">
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Blended">Blended</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-tipo">Tipo de Programa</label>
+            <select id="f-tipo">
+              <option value="Abierto">Abierto</option>
+              <option value="Empresarial">Empresarial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-mes">Mes de planeación *</label>
+            <select id="f-mes">
+              <option value="Enero">Enero</option>
+              <option value="Febrero">Febrero</option>
+              <option value="Marzo">Marzo</option>
+              <option value="Abril">Abril</option>
+              <option value="Mayo">Mayo</option>
+              <option value="Junio">Junio</option>
+              <option value="Julio">Julio</option>
+              <option value="Agosto">Agosto</option>
+              <option value="Septiembre">Septiembre</option>
+              <option value="Octubre">Octubre</option>
+              <option value="Noviembre">Noviembre</option>
+              <option value="Diciembre">Diciembre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-estado">Estado</label>
+            <select id="f-estado">
+              <option value="En curso">En curso</option>
+              <option value="En preparación">En preparación</option>
+              <option value="Pronto a comenzar">Pronto a comenzar</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Reprogramado">Reprogramado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section-title">2. Contacto y Tiempos</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-nombre-contacto">Nombre de contacto</label>
+            <input type="text" id="f-nombre-contacto" placeholder="Nombre del docente o coordinador">
+          </div>
+          <div class="form-group">
+            <label for="f-celular">Celular</label>
+            <input type="text" id="f-celular" placeholder="Ej: 300 1234567">
+          </div>
+          <div class="form-group">
+            <label for="f-fecha-inicio">Fecha inicio</label>
+            <input type="date" id="f-fecha-inicio">
+          </div>
+          <div class="form-group">
+            <label for="f-fecha-fin">Fecha fin</label>
+            <input type="date" id="f-fecha-fin">
+          </div>
+        </div>
+
+        <!-- Diseñador interactivo de horario y días de clase -->
+        <div class="schedule-builder-card" id="schedule-builder-wrap">
+          <div class="schedule-builder-header">
+            <div>
+              <div class="schedule-builder-title">🗓️ Programación de Días y Franja Horaria</div>
+              <div class="schedule-builder-subtitle" id="sched-mode-hint">
+                Selecciona los días en que se dictará clase y define su franja horaria específica.
+              </div>
+            </div>
+            <div class="schedule-builder-mode-badge" id="sched-modalidad-badge">
+              Modalidad: <strong>Presencial</strong>
+            </div>
+          </div>
+
+          <!-- Selector rápido de días de la semana -->
+          <div class="schedule-days-selector">
+            <span class="sched-select-label">Días de clase:</span>
+            <div class="sched-day-buttons" id="sched-day-buttons"></div>
+          </div>
+
+          <!-- Lista de días activos con sus franjas horarias y selector presencial/remoto en Blended -->
+          <div class="schedule-slots-list" id="sched-slots-list"></div>
+
+          <!-- Resumen y vista previa generada -->
+          <div class="schedule-preview-box">
+            <div class="sched-preview-header">
+              <span class="sched-preview-label">Horario generado:</span>
+              <button type="button" class="sched-btn-link" id="btn-toggle-manual-horario">
+                ✏️ Editar texto manualmente
+              </button>
+            </div>
+            <div class="sched-preview-text" id="sched-preview-text">
+              <em>Selecciona los días de clase arriba para configurar el horario.</em>
+            </div>
+            <input type="text" id="f-horario" style="margin-top:8px; display:none;"
+              placeholder="Ej: Viernes de 5 a 9 pm y sábados de 8 am a 12 pm">
+            <div class="sched-stats-line" id="sched-stats-line" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 12px;">
+          <div class="form-group" style="flex:1;">
+            <label for="f-link">Links sesiones virtuales (Zoom / Meet / Teams)</label>
+            <input type="text" id="f-link" placeholder="https://uninorte-edu-co.zoom.us/j/...">
+          </div>
+        </div>
+
+        <div class="form-section-title">3. Tabulaciones (1 a 5)</div>
+        <div class="form-row" style="grid-template-columns: repeat(5, 1fr);">
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Tabulación 1</label>
+            <input type="text" id="f-tab-1-val" placeholder="Ok, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-tab-1-st" style="font-size:11px;">
+              <option value="completo">Tabulada</option>
+              <option value="vencido">Vencida</option>
+              <option value="proximo">Próxima</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Tabulación 2</label>
+            <input type="text" id="f-tab-2-val" placeholder="Ok, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-tab-2-st" style="font-size:11px;">
+              <option value="completo">Tabulada</option>
+              <option value="vencido">Vencida</option>
+              <option value="proximo">Próxima</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Tabulación 3</label>
+            <input type="text" id="f-tab-3-val" placeholder="Ok, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-tab-3-st" style="font-size:11px;">
+              <option value="completo">Tabulada</option>
+              <option value="vencido">Vencida</option>
+              <option value="proximo">Próxima</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Tabulación 4</label>
+            <input type="text" id="f-tab-4-val" placeholder="Ok, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-tab-4-st" style="font-size:11px;">
+              <option value="completo">Tabulada</option>
+              <option value="vencido">Vencida</option>
+              <option value="proximo">Próxima</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Tabulación 5</label>
+            <input type="text" id="f-tab-5-val" placeholder="Ok, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-tab-5-st" style="font-size:11px;">
+              <option value="completo">Tabulada</option>
+              <option value="vencido">Vencida</option>
+              <option value="proximo">Próxima</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section-title">4. Salones (1 a 4)</div>
+        <div class="form-row" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Salones 1</label>
+            <input type="text" id="f-sal-1-val" placeholder="CEC 4, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-sal-1-st" style="font-size:11px;">
+              <option value="completo">Confirmado</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="por_confirmar">Por confirmar</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Salones 2</label>
+            <input type="text" id="f-sal-2-val" placeholder="CEC 4, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-sal-2-st" style="font-size:11px;">
+              <option value="completo">Confirmado</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="por_confirmar">Por confirmar</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Salones 3</label>
+            <input type="text" id="f-sal-3-val" placeholder="CEC 4, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-sal-3-st" style="font-size:11px;">
+              <option value="completo">Confirmado</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="por_confirmar">Por confirmar</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+          <div class="sub-card">
+            <label style="font-weight:600;font-size:11px;">Salones 4</label>
+            <input type="text" id="f-sal-4-val" placeholder="CEC 4, etc." style="font-size:11px;margin-bottom:4px;">
+            <select id="f-sal-4-st" style="font-size:11px;">
+              <option value="completo">Confirmado</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="por_confirmar">Por confirmar</option>
+              <option value="no_aplica">No aplica</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section-title">5. Facturación y Evaluaciones</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-facturacion-estado">Estado Facturación</label>
+            <select id="f-facturacion-estado">
+              <option value="Facturado">Facturado</option>
+              <option value="Pendiente">Pendiente</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="f-facturacion-comentarios">Comentarios Facturación</label>
+            <input type="text" id="f-facturacion-comentarios" placeholder="Detalles de facturación">
+          </div>
+          <div class="form-group">
+            <label for="f-descuentos">Descuentos</label>
+            <input type="text" id="f-descuentos" placeholder="Descuentos aplicados">
+          </div>
+          <div class="form-group">
+            <label for="f-evaluaciones">Evaluaciones</label>
+            <select id="f-evaluaciones">
+              <option value="Sin enviar">Sin enviar</option>
+              <option value="Enviada">Enviada</option>
+              <option value="En proceso">En proceso</option>
+              <option value="Cerrada">Cerrada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section-title">6. 📁 Google Drive y Control de Asistencia</div>
+        <div class="sub-card"
+          style="padding:14px;background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div>
+              <div
+                style="font-weight:700;font-size:13px;color:var(--slate-800);display:flex;align-items:center;gap:6px;">
+                <span>📂</span> Carpetas en Google Drive y Archivo de Asistencia
+              </div>
+              <div style="font-size:12px;color:var(--slate-500);margin-top:2px;">
+                Estructura: <code>Cursos CEC / [Mes] / [Nombre_Curso_NRC] / Asistencia.xlsx</code>
+              </div>
+            </div>
+            <div id="drive-status-container" style="display:flex;gap:8px;align-items:center;">
+              <label
+                style="font-size:12px;color:var(--slate-700);display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="f-auto-create-drive" checked
+                  style="width:16px;height:16px;accent-color:var(--blue);">
+                Crear automáticamente en Google Drive
+              </label>
+            </div>
+          </div>
+
+          <!-- Enlaces dinámicos si ya existen -->
+          <div id="drive-links-panel"
+            style="margin-top:12px;display:none;padding-top:12px;border-top:1px dashed var(--slate-300);">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <a href="#" id="link-drive-folder" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"
+                style="display:inline-flex;align-items:center;gap:6px;font-size:12px;">
+                <span>📁</span> Ver Carpeta en Drive
+              </a>
+              <a href="#" id="link-drive-sheet" target="_blank" rel="noopener" class="btn btn-primary btn-sm"
+                style="display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--emerald-600);border-color:var(--emerald-700);">
+                <span>📊</span> Abrir Planilla de Asistencia
+              </a>
+              <button type="button" id="btn-download-asistencia-xlsx" class="btn btn-secondary btn-sm"
+                style="display:inline-flex;align-items:center;gap:6px;font-size:12px;"
+                title="Descargar copia Excel (.xlsx) directamente a tu equipo">
+                <span>📥</span> Descargar Excel (.xlsx)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:24px;">
+          <button type="button" id="prog-btn-delete" class="btn btn-danger" style="margin-right:auto;display:none;">🗑️
+            Eliminar</button>
+          <button type="button" id="prog-btn-cancel" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" id="prog-btn-save" class="btn btn-primary">💾 Guardar en Firebase</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Importación de Excel -->
+  <div id="import-modal" class="modal-overlay" hidden>
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <h3 id="import-modal-title">📊 Importar desde Excel</h3>
+        <button type="button" id="import-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <div class="import-modal-body">
+        <!-- Paso 1: Info del archivo -->
+        <div class="import-file-info" id="import-file-info">
+          <div class="import-file-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--emerald-600)" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </div>
+          <div>
+            <div class="import-file-name" id="import-file-name">archivo.xlsx</div>
+            <div class="import-file-meta" id="import-file-meta">0 hojas · 0 filas totales</div>
+          </div>
+        </div>
+
+        <!-- Paso 2: Selector de hojas -->
+        <div class="import-section">
+          <div class="import-section-title">Hojas detectadas (cada hoja = un mes)</div>
+          <div class="import-sheets-grid" id="import-sheets-grid"></div>
+        </div>
+
+        <!-- Paso 3: Vista previa de datos -->
+        <div class="import-section">
+          <div class="import-section-title">Vista previa de datos <span class="tag" id="import-preview-count"></span>
+          </div>
+          <div class="import-preview-scroll" id="import-preview-table-wrap">
+            <table class="import-preview-table">
+              <thead id="import-preview-thead"></thead>
+              <tbody id="import-preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Paso 4: Opciones de importación -->
+        <div class="import-section">
+          <div class="import-section-title">Opciones</div>
+          <div class="import-options-row">
+            <label class="import-option-check">
+              <input type="checkbox" id="import-opt-overwrite">
+              <span>Sobrescribir programas existentes con el mismo nombre</span>
+            </label>
+            <label class="import-option-check">
+              <input type="checkbox" id="import-opt-all-sheets" checked>
+              <span>Importar todas las hojas seleccionadas</span>
+            </label>
+            <label class="import-option-check">
+              <input type="checkbox" id="import-opt-drive" checked>
+              <span>📁 Montar automáticamente carpetas y planillas en Google Drive</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Resumen final -->
+        <div class="import-summary" id="import-summary">
+          <span class="import-summary-icon">📋</span>
+          <span id="import-summary-text">Selecciona las hojas a importar.</span>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px;">
+        <button type="button" id="import-btn-cancel" class="btn btn-secondary">Cancelar</button>
+        <button type="button" id="import-btn-confirm" class="btn btn-primary" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Importar a Firebase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast flotante de notificación de nuevo correo en tiempo real -->
+  <div id="email-toast-notification" class="email-toast" style="display:none;" role="alert">
+    <div class="email-toast-inner">
+      <div class="email-toast-icon">📩</div>
+      <div class="email-toast-body">
+        <div class="email-toast-title">Nueva solicitud de Apertura de Curso</div>
+        <div class="email-toast-desc" id="email-toast-desc">Se detectó un correo nuevo. ¿Deseas revisarlo?</div>
+      </div>
+      <button type="button" id="email-toast-btn" class="btn btn-sm btn-primary">Revisar</button>
+      <button type="button" id="email-toast-close" class="email-toast-close" title="Cerrar">&times;</button>
+    </div>
+  </div>
+
+  <!-- Modal de Solicitudes de Apertura de Curso desde Correo -->
+  <div id="email-requests-modal" class="modal-overlay" hidden>
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="email-modal-header-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:18px;font-weight:700;">Apertura de Cursos desde Correo</h3>
+            <div style="font-size:12px;color:var(--text-muted);">Extracción inteligente con IA y confirmación para
+              guardar en Firebase</div>
+          </div>
+        </div>
+        <button type="button" id="email-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <!-- Pestañas del modal de correo -->
+      <div class="email-modal-tabs">
+        <button type="button" class="email-tab-btn active" data-tab="pendientes" id="tab-btn-pendientes">
+          📥 Solicitudes Pendientes <span id="email-tab-counter" class="email-tab-badge">0</span>
+        </button>
+        <button type="button" class="email-tab-btn" data-tab="simulador" id="tab-btn-simulador">
+          🧪 Probar / Simular Correo con IA
+        </button>
+        <button type="button" class="email-tab-btn" data-tab="config" id="tab-btn-config">
+          ⚙️ Conexión Gmail Automática
+        </button>
+      </div>
+
+      <div class="email-modal-content">
+        <!-- Panel 1: Lista de Solicitudes Pendientes -->
+        <div id="email-panel-pendientes" class="email-tab-panel active">
+          <!-- Barra de control y búsqueda en tiempo real -->
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;padding:10px 14px;background:#f8fafc;border:1px solid var(--slate-200);border-radius:10px;">
+            <div style="font-size:12.5px;color:var(--slate-600);">
+              🔍 Búsqueda activa por palabras clave: <strong>"apertura"</strong>, <strong>"solicitud de
+                apertura"</strong> o <strong>"diplomado"</strong>
+            </div>
+            <button type="button" id="btn-sync-emails-now" class="btn btn-secondary btn-sm"
+              style="display:inline-flex;align-items:center;gap:6px;font-weight:600;"
+              title="Buscar nuevos correos en Gmail">
+              <span id="sync-emails-icon">🔍</span>
+              <span id="sync-emails-label">Buscar Correos</span>
+            </button>
+          </div>
+
+          <div id="email-empty-state" class="email-empty-state" style="display:none;">
+            <div class="email-empty-icon">📭</div>
+            <div class="email-empty-title">No hay correos de apertura pendientes</div>
+            <div class="email-empty-text">
+              Cuando alguien envíe un correo con asunto o contenido de <strong>"Apertura de curso"</strong>,
+              la aplicación lo detectará en tiempo real, extraerá la información con IA y te preguntará aquí si deseas
+              guardarla.
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;">
+              <button type="button" id="btn-ir-simulador" class="btn btn-primary" style="font-size:13px;">
+                🧪 Probar ahora con un correo de ejemplo
+              </button>
+              <button type="button" id="btn-ir-config" class="btn btn-secondary" style="font-size:13px;">
+                ⚙️ Ver script para Gmail
+              </button>
+            </div>
+          </div>
+
+          <div id="email-requests-list" class="email-requests-container">
+            <!-- Tarjetas inyectadas dinámicamente con JavaScript -->
+          </div>
+        </div>
+
+        <!-- Panel 2: Simulador / Probador con IA -->
+        <div id="email-panel-simulador" class="email-tab-panel" style="display:none;">
+          <div class="email-sim-intro">
+            <span style="font-size:18px;">💡</span>
+            <div>
+              <strong>Simulador de Correo con IA:</strong> Pega aquí el texto de cualquier correo informal o sin formato
+              fijo. La IA extraerá automáticamente todos los campos del programa y podrás decidir si almacenarlo en
+              Firebase.
+            </div>
+          </div>
+
+          <div class="email-sim-presets">
+            <span style="font-size:12px;font-weight:600;color:var(--text-muted);">Cargar plantilla rápida:</span>
+            <button type="button" class="btn btn-secondary btn-sm sim-preset-btn" data-preset="excel">
+              📊 Curso Excel Avanzado (Presencial)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm sim-preset-btn" data-preset="proyectos">
+              🏗️ Diplomado Gestión de Proyectos (Blended)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm sim-preset-btn" data-preset="ia">
+              🤖 Taller IA Generativa (Remoto)
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label for="email-sim-subject" style="font-weight:600;font-size:12px;">Asunto del correo:</label>
+            <input type="text" id="email-sim-subject" value="Apertura de Curso - Excel Avanzado y Power BI"
+              placeholder="Asunto...">
+          </div>
+
+          <div class="form-group">
+            <label for="email-sim-sender" style="font-weight:600;font-size:12px;">Remitente (De):</label>
+            <input type="text" id="email-sim-sender" value="coordinacion.cec@uninorte.edu.co"
+              placeholder="correo@uninorte.edu.co">
+          </div>
+
+          <div class="form-group">
+            <label for="email-sim-body" style="font-weight:600;font-size:12px;">Cuerpo del correo (texto libre / sin
+              formato):</label>
+            <textarea id="email-sim-body" rows="6" placeholder="Pega el correo recibido aquí..."></textarea>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:12px;">
+            <button type="button" id="email-sim-extract-btn" class="btn btn-primary"
+              style="display:inline-flex;align-items:center;gap:6px;">
+              <span>✨</span> Analizar y Extraer con IA
+            </button>
+          </div>
+
+          <!-- Resultado de la simulación -->
+          <div id="email-sim-result" style="display:none;margin-top:20px;"></div>
+        </div>
+
+        <!-- Panel 3: Guía y Script para Gmail y Webhook Drive Automático -->
+        <div id="email-panel-config" class="email-tab-panel" style="display:none;">
+          <div class="email-config-guide">
+
+            <!-- Card de Configuración de Webhook en Tiempo Real -->
+            <div
+              style="background:#ffffff;border:1.5px solid var(--indigo-300);border-radius:12px;padding:16px;margin-bottom:20px;box-shadow:0 4px 12px rgba(99,102,241,0.08);">
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:20px;">⚡</span>
+                  <h4 style="margin:0;font-size:15px;color:var(--slate-900);font-weight:700;">
+                    Webhook de Google Drive en Tiempo Real
+                  </h4>
+                </div>
+                <span id="gas-webhook-status-badge" class="pill grey" style="font-size:11px;padding:3px 10px;">
+                  No configurado
+                </span>
+              </div>
+              <p style="margin:0 0 12px 0;font-size:12px;color:var(--slate-600);line-height:1.4;">
+                Permite que la <strong>creación, edición y eliminación de cursos y carpetas</strong> ocurra al instante
+                en tu Google Drive mediante Webhook HTTP, sin depender de temporizadores.
+              </p>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="url" id="gas-webhook-url-input" placeholder="https://script.google.com/macros/s/.../exec"
+                  style="flex:1;min-width:260px;padding:8px 12px;border:1px solid var(--slate-300);border-radius:8px;font-size:13px;font-family:monospace;">
+                <button type="button" id="btn-save-gas-webhook" class="btn btn-primary"
+                  style="font-size:13px;padding:8px 14px;">
+                  💾 Guardar Webhook
+                </button>
+                <button type="button" id="btn-test-gas-webhook" class="btn btn-secondary"
+                  style="font-size:13px;padding:8px 14px;">
+                  🧪 Probar Conexión
+                </button>
+              </div>
+              <div id="gas-webhook-feedback"
+                style="display:none;font-size:12px;margin-top:8px;padding:8px 12px;border-radius:6px;"></div>
+
+              <div
+                style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--slate-200);font-size:12px;color:var(--slate-500);">
+                <strong>¿Cómo obtener tu URL de Webhook en 30 segundos?</strong><br>
+                En Google Apps Script &rarr; Clic en <strong>Implementar</strong> (arriba a la derecha) &rarr;
+                <strong>Nueva implementación</strong> &rarr; Tipo: <strong>Aplicación web</strong> &rarr; Acceso:
+                <strong>Cualquiera</strong> &rarr; Clic en <strong>Implementar</strong> y copia la URL terminada en
+                <code>/exec</code>.
+              </div>
+            </div>
+
+            <h4 style="margin:0 0 8px 0;font-size:15px;color:var(--indigo-700);">
+              🚀 Código del Script y Sincronizador Automático
+            </h4>
+            <p style="margin:0 0 12px 0;font-size:13px;color:var(--slate-600);line-height:1.5;">
+              Para que Gmail revise en segundo plano tus correos de "Apertura de curso" las 24 horas y los envíe
+              automáticamente a esta aplicación sin tener la pestaña abierta, sigue estos sencillos pasos:
+            </p>
+
+            <ol class="email-steps-list">
+              <li>
+                <strong>Abre Google Apps Script:</strong> Ve a <a href="https://script.google.com/" target="_blank"
+                  rel="noopener"
+                  style="color:var(--indigo-600);text-decoration:underline;font-weight:600;">script.google.com</a> con
+                la cuenta de correo donde recibes los correos de Apertura de Curso.
+              </li>
+              <li>
+                <strong>Pega el Script Oficial:</strong> Crea un nuevo proyecto (o abre el actual), borra lo que haya y
+                pega el código completo que está aquí abajo. Haz clic en Guardar (ícono de disco).
+              </li>
+              <li>
+                <strong>Implementa la Aplicación Web (Webhook):</strong><br>
+                Haz clic en el botón azul <strong>Implementar</strong> (arriba a la derecha) &rarr; <strong>Nueva
+                  implementación</strong> &rarr; Tipo: <strong>Aplicación web</strong> &rarr; Ejecutar como:
+                <strong>Yo</strong> &rarr; Quién tiene acceso: <strong>Cualquiera</strong> &rarr; Haz clic en
+                <strong>Implementar</strong>, copia la URL que termina en <code>/exec</code> y pégala en la casilla de
+                Webhook arriba.
+              </li>
+              <li>
+                <strong>Sincronización Inteligente Automática:</strong><br>
+                ¡Listo! A partir de este momento, tu Tablero Web revisará automáticamente los correos por palabras clave
+                cada vez que abras la aplicación, y también puedes hacer clic en el botón <strong>"🔍 Buscar
+                  Correos"</strong> cuando desees una búsqueda
+                inmediata en 2 segundos.
+              </li>
+              <li>
+                <strong>(Opcional) Respaldo para cuando tu PC esté apagado:</strong><br>
+                En Google Apps Script, en el selector de funciones arriba, puedes seleccionar
+                <code>configurarActivadorRespaldo30Min</code> y hacer clic en <strong>Ejecutar</strong> para dejar un
+                respaldo pasivo cada 30 minutos sin saturar cuotas.
+              </li>
+              <li>
+                <strong>⚡ Sincronización en Tiempo Real desde Google Sheets (Sheets &rarr; Web):</strong><br>
+                Este script incluye el activador oficial para que cuando cualquier persona edite asistencias (<strong>P</strong>, <strong>F</strong>, <strong>E</strong> o borrar) directamente dentro del archivo de Google Sheets, los cambios se reflejen automáticamente en el tablero web en tiempo real (&lt; 500 ms). Para activarlo en todas tus planillas creadas, en el selector de funciones de Apps Script selecciona <code>vincularActivadoresParaTodasLasHojas</code> y haz clic en <strong>Ejecutar</strong> una sola vez (las planillas nuevas y existentes también se autovinculan al abrir la ventana de alumnos en la web).
+              </li>
+            </ol>
+
+            <div
+              style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;margin-bottom:8px;">
+              <span
+                style="font-size:12px;font-weight:700;color:var(--slate-700);text-transform:uppercase;letter-spacing:0.5px;">
+                Código de Google Apps Script (gmail-sync-script.js)
+              </span>
+              <button type="button" id="btn-copy-gas-code" class="btn btn-secondary btn-sm"
+                style="display:inline-flex;align-items:center;gap:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Copiar Código</span>
+              </button>
+            </div>
+
+            <pre class="email-code-block"><code id="gas-code-display">// Cargando código...</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:16px;">
+        <button type="button" id="email-modal-btn-close" class="btn btn-secondary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Gestión de Participantes y Control de Asistencia Oficial -->
+  <div id="participants-modal" class="modal-overlay" hidden>
+    <div class="modal-card modal-card-xl">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+          <div class="email-modal-header-icon"
+            style="background:var(--indigo-50);color:var(--indigo-600);border-color:var(--indigo-200);width:42px;height:42px;font-size:20px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            👥
+          </div>
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <h3 id="part-modal-title"
+                style="margin:0;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Participantes
+                y Control de Asistencia</h3>
+              <span id="part-modal-nrc-badge" class="pill blue" style="font-size:11px;">NRC: —</span>
+            </div>
+            <div id="part-modal-subtitle"
+              style="font-size:12px;color:var(--slate-500);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              Cargando información del curso...</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <a id="part-link-sheet" href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"
+            style="display:none;" title="Abrir planilla oficial en Google Sheets">
+            📊 Planilla Sheets ↗
+          </a>
+          <a id="part-link-drive" href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"
+            style="display:none;" title="Abrir carpeta del curso en Google Drive">
+            📁 Carpeta Drive ↗
+          </a>
+          <button type="button" id="part-modal-close" class="modal-close" aria-label="Cerrar">&times;</button>
+        </div>
+      </div>
+
+      <!-- Barra de Auditoría de Tabulación y KPIs -->
+      <div class="part-kpi-bar">
+        <div class="part-kpi-card">
+          <div class="part-kpi-num" id="part-kpi-matriculados">0</div>
+          <div class="part-kpi-lbl">👥 Matriculados</div>
+        </div>
+        <div class="part-kpi-card">
+          <div class="part-kpi-num" id="part-kpi-sesiones">0 / 0</div>
+          <div class="part-kpi-lbl">✓ Sesiones Tabuladas</div>
+        </div>
+        <div class="part-kpi-card" id="part-kpi-card-pendientes">
+          <div class="part-kpi-num" id="part-kpi-pendientes">0</div>
+          <div class="part-kpi-lbl">⚠️ Sin Tabular (Retrasadas)</div>
+        </div>
+        <div class="part-kpi-card">
+          <div class="part-kpi-num" id="part-kpi-promedio">0%</div>
+          <div class="part-kpi-lbl">📈 Asistencia Global</div>
+        </div>
+      </div>
+
+      <!-- Barra de progreso visual de tabulación -->
+      <div style="padding:0 24px 12px;background:#ffffff;">
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:11px;font-weight:600;color:var(--slate-600);">
+          <span id="part-tab-progress-label">Progreso de tabulación de sesiones</span>
+          <span id="part-tab-progress-pct">0%</span>
+        </div>
+        <div style="height:6px;background:var(--slate-100);border-radius:9999px;overflow:hidden;">
+          <div id="part-tab-progress-bar"
+            style="height:100%;width:0%;background:linear-gradient(90deg, var(--indigo-500), var(--emerald-500));border-radius:9999px;transition:width .3s ease;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Pestañas del Modal -->
+      <div class="email-modal-tabs" style="padding:0 24px;border-bottom:1px solid var(--border);background:#ffffff;">
+        <button type="button" class="email-tab-btn active" id="part-tab-btn-alumnos" data-tab="alumnos">
+          👥 Lista de Alumnos <span class="tab-badge" id="part-tab-badge-alumnos">0</span>
+        </button>
+        <button type="button" class="email-tab-btn" id="part-tab-btn-matriz" data-tab="matriz">
+          📊 Matriz de Asistencia y Tabulación <span class="tab-badge" id="part-tab-badge-matriz">0/0</span>
+        </button>
+      </div>
+
+      <!-- Contenido scrolleable -->
+      <div class="modal-scroll-area" style="padding:18px 24px;overflow-y:auto;flex:1;background:var(--slate-50);">
+        <!-- PESTAÑA 1: LISTA DE ALUMNOS -->
+        <div id="part-tab-content-alumnos">
+          <!-- Barra de herramientas superior -->
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary btn-sm" id="part-btn-toggle-add-form">
+                + Añadir Alumno
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="part-btn-toggle-batch">
+                📋 Pegar masivo desde Excel / Banner
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="part-btn-copy-emails"
+                title="Copiar todos los correos electrónicos">
+                📧 Copiar correos
+              </button>
+            </div>
+            <div style="position:relative;min-width:240px;">
+              <input type="text" id="part-search-input" placeholder="🔍 Filtrar alumno o documento..."
+                style="width:100%;padding:7px 12px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#ffffff;">
+            </div>
+          </div>
+
+          <!-- Formulario rápido para añadir participante individual (plegable) -->
+          <div id="part-single-form-box" class="part-collapse-card" style="display:none;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <h4 style="margin:0;font-size:14px;font-weight:700;color:var(--slate-800);">Añadir Nuevo Participante</h4>
+              <button type="button" class="btn-action" id="part-single-form-close" style="font-size:12px;">✕
+                Cancelar</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;">
+              <div>
+                <label
+                  style="display:block;font-size:11px;font-weight:600;color:var(--slate-600);margin-bottom:4px;">No.
+                  Documento *</label>
+                <input type="text" id="part-in-doc" placeholder="Ej: 1045123456" class="form-control"
+                  style="width:100%;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;">
+              </div>
+              <div>
+                <label
+                  style="display:block;font-size:11px;font-weight:600;color:var(--slate-600);margin-bottom:4px;">Nombre
+                  Completo *</label>
+                <input type="text" id="part-in-nom" placeholder="Ej: Carlos Andrés Mendoza" class="form-control"
+                  style="width:100%;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;">
+              </div>
+              <div>
+                <label
+                  style="display:block;font-size:11px;font-weight:600;color:var(--slate-600);margin-bottom:4px;">Correo
+                  Electrónico</label>
+                <input type="email" id="part-in-cor" placeholder="Ej: cmendoza@uninorte.edu.co" class="form-control"
+                  style="width:100%;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;">
+              </div>
+              <div>
+                <label
+                  style="display:block;font-size:11px;font-weight:600;color:var(--slate-600);margin-bottom:4px;">Teléfono
+                  / Celular</label>
+                <input type="tel" id="part-in-tel" placeholder="Ej: 3001234567" class="form-control"
+                  style="width:100%;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;">
+              </div>
+            </div>
+            <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px;">
+              <button type="button" id="part-btn-submit-single" class="btn btn-primary btn-sm">
+                ✓ Registrar Alumno
+              </button>
+            </div>
+          </div>
+
+          <!-- Importador Masivo desde Excel / Banner (plegable) -->
+          <div id="part-batch-form-box" class="part-collapse-card" style="display:none;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div>
+                <h4 style="margin:0;font-size:14px;font-weight:700;color:var(--slate-800);">Importación Rápida desde
+                  Excel / Banner</h4>
+                <div style="font-size:11px;color:var(--slate-500);margin-top:2px;">
+                  Copia y pega las celdas directamente de Excel o Banner. Se detectarán automáticamente las columnas:
+                  <strong>Documento | Nombre | Correo | Celular</strong>.
+                </div>
+              </div>
+              <button type="button" class="btn-action" id="part-batch-form-close" style="font-size:12px;">✕
+                Cancelar</button>
+            </div>
+            <textarea id="part-batch-textarea" rows="6"
+              placeholder="Pega aquí los datos copiados de Excel (filas y columnas)...&#10;Ejemplo:&#10;1045123456&#9;Carlos Andrés Mendoza&#9;cmendoza@uninorte.edu.co&#9;3001234567&#10;1045987654&#9;Ana María Gómez&#9;agomez@uninorte.edu.co&#9;3019876543"
+              style="width:100%;padding:10px;font-family:var(--font-mono);font-size:12px;border:1px solid var(--border);border-radius:8px;resize:vertical;"></textarea>
+
+            <div id="part-batch-preview-line"
+              style="margin-top:8px;font-size:12px;font-weight:600;color:var(--indigo-600);display:none;"></div>
+
+            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+              <label
+                style="font-size:11px;color:var(--slate-500);display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="part-batch-replace-chk">
+                Reemplazar lista actual (si está desmarcado, se añadirán a los existentes)
+              </label>
+              <div style="display:flex;gap:8px;">
+                <button type="button" id="part-btn-parse-batch" class="btn btn-secondary btn-sm">👁️ Analizar
+                  Texto</button>
+                <button type="button" id="part-btn-submit-batch" class="btn btn-primary btn-sm" disabled>
+                  📥 Importar Participantes
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla de alumnos registrados -->
+          <div class="part-table-wrapper"
+            style="background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-xs);">
+            <table class="part-table" style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:var(--slate-50);border-bottom:1px solid var(--border);text-align:left;">
+                  <th style="padding:10px 14px;width:40px;color:var(--slate-500);font-weight:700;">#</th>
+                  <th style="padding:10px 14px;color:var(--slate-700);font-weight:700;">Documento</th>
+                  <th style="padding:10px 14px;color:var(--slate-700);font-weight:700;">Nombre Completo</th>
+                  <th style="padding:10px 14px;color:var(--slate-700);font-weight:700;">Correo Electrónico</th>
+                  <th style="padding:10px 14px;color:var(--slate-700);font-weight:700;">Celular</th>
+                  <th style="padding:10px 14px;text-align:center;color:var(--slate-700);font-weight:700;">Asistencias
+                  </th>
+                  <th style="padding:10px 14px;text-align:center;color:var(--slate-700);font-weight:700;">% Asist.</th>
+                  <th style="padding:10px 14px;text-align:center;color:var(--slate-700);font-weight:700;">Estado</th>
+                  <th style="padding:10px 14px;text-align:right;color:var(--slate-700);font-weight:700;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="part-alumnos-tbody">
+                <tr>
+                  <td colspan="9" style="text-align:center;padding:32px;color:var(--slate-400);">Sin participantes
+                    matriculados en este curso.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PESTAÑA 2: MATRIZ DE ASISTENCIA Y TABULACIÓN -->
+        <div id="part-tab-content-matriz" style="display:none;">
+          <div class="part-matrix-notice"
+            style="margin-bottom:14px;background:var(--indigo-50);border:1px solid var(--indigo-200);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div style="font-size:12px;color:var(--indigo-900);">
+              💡 <strong>Modo Tabulación Rápida:</strong> Haz clic en cualquier celda para alternar:
+              <span class="pill green" style="padding:1px 6px;font-size:10px;margin:0 2px;">P</span> Presente &rarr;
+              <span class="pill red" style="padding:1px 6px;font-size:10px;margin:0 2px;">F</span> Falta &rarr;
+              <span class="pill blue" style="padding:1px 6px;font-size:10px;margin:0 2px;">E</span> Excusa &rarr;
+              <span class="pill grey" style="padding:1px 6px;font-size:10px;margin:0 2px;">—</span> Vacío.
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button type="button" class="btn btn-secondary btn-sm" id="part-matrix-btn-pull"
+                title="Traer registros desde la planilla de Google Sheets">
+                📥 Traer de Drive
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="part-matrix-btn-push"
+                title="Guardar y enviar a la planilla de Google Sheets">
+                📤 Sincronizar a Drive
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenedor scroll horizontal de la matriz de asistencia -->
+          <div class="part-matrix-container"
+            style="background:#ffffff;border:1px solid var(--border);border-radius:12px;overflow-x:auto;box-shadow:var(--shadow-xs);max-height:55vh;">
+            <table class="part-matrix-table" id="part-matrix-table"
+              style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead id="part-matrix-thead">
+                <!-- Se inyecta dinámicamente con las sesiones -->
+              </thead>
+              <tbody id="part-matrix-tbody">
+                <!-- Se inyecta dinámicamente con los alumnos y botones de celda -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie de acciones del modal -->
+      <div class="modal-actions"
+        style="padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:#ffffff;flex-shrink:0;">
+        <div id="part-save-status-indicator"
+          style="font-size:12px;color:var(--slate-500);display:flex;align-items:center;gap:6px;">
+          <span class="dot green"></span> Conectado a Firebase en tiempo real
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button type="button" id="part-btn-export-excel-modal" class="btn btn-secondary btn-sm"
+            title="Descargar planilla en Excel (.xlsx) para este curso">
+            📥 Descargar Excel (.xlsx)
+          </button>
+          <button type="button" id="part-modal-btn-close" class="btn btn-secondary btn-sm">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs Compat v10 (para Vanilla JS directo en navegador) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <!-- SheetJS para lectura de archivos Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <!-- Carga dinámica sin caché permanente (siempre fresca) -->
+  <script>
+    (function () {
+      var t = Date.now();
+      document.write('<script src="firebase-config.js?t=' + t + '"><\/script>');
+      document.write('<script src="script.js?t=' + t + '"><\/script>');
+    })();
+  </script>
+</body>
+
+</html>

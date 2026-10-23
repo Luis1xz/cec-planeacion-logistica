@@ -1,0 +1,32 @@
+{
+  "rules": {
+    "tablero_estado": {
+      ".read": true,
+      ".write": true
+    },
+    "meses": {
+      ".read": true,
+      ".write": true
+    },
+    "programas": {
+      ".read": true,
+      ".write": true
+    },
+    "solicitudes_pendientes": {
+      ".read": true,
+      ".write": true
+    },
+    "cola_creacion_drive": {
+      ".read": true,
+      ".write": true
+    },
+    "cola_eliminacion_drive": {
+      ".read": true,
+      ".write": true
+    },
+    "config": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
